@@ -1,0 +1,69 @@
+<launch>
+
+  <arg name="gzname" default="gazebo"/>
+  <arg name="gzworld" default="$(find aslam_project)/worlds/myworld_test040816_grass.world"/>
+  <arg name="hand_suffix" default=""/>
+  <arg name="extra_gazebo_args" default="-q" />
+  <arg name="model_args" default="" />
+  <arg name="inertia_args" default="" /> <!-- _with_v1_inertia -->
+<!--
+  <param name="/atlas/time_to_unpin" type="double" value="1.0"/>
+
+  <param name="/atlas/startup_mode" type="string" value="bdi_stand"/>
+  -->
+
+  <!-- start gazebo with the Atlas -->
+  <include file="$(find drcsim_gazebo)/launch/atlas_no_controllers.launch">
+    <arg name="gzname" value="$(arg gzname)"/>
+    <arg name="gzworld" value="$(arg gzworld)"/>
+    <arg name="extra_gazebo_args" value="$(arg extra_gazebo_args)"/>
+  </include>
+
+  <!-- to trigger synchronization delay, set atlas_msgs::AtlasCommand::desired_controller_period_ms to non-zero -->
+  <param name="/atlas/delay_window_size" type="double" value="5.0"/>
+  <param name="/atlas/delay_max_per_window" type="double" value="0.25"/>
+  <param name="/atlas/delay_max_per_step" type="double" value="0.025"/>
+
+  <!-- Robot Description -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas$(arg model_args)$(arg inertia_args)$(arg hand_suffix).urdf.xacro'" />
+  <param name="robot_initial_pose/x"     value="0" type="double"/>
+  <param name="robot_initial_pose/y"     value="0" type="double"/>
+  <param name="robot_initial_pose/z"     value="1.0" type="double"/>
+  <param name="robot_initial_pose/roll"  value="0" type="double"/>
+  <param name="robot_initial_pose/pitch" value="0" type="double"/>
+  <param name="robot_initial_pose/yaw"   value="0" type="double"/>
+
+  <include file="$(find drcsim_gazebo)/launch/atlas$(arg hand_suffix)_bringup.launch">
+    <arg name="model_args" value="$(arg model_args)"/>
+  </include>
+
+  <node pkg="aslam_project" type="init.sh" 
+    args="" 
+    name="init" output="screen">
+  </node>
+
+  <!-- Development aid - Convert quaternions in gazebo to roll, pitch, yaw for robot -->
+  <node pkg="aslam_project" type="quat2taitbryan" name="quat2taitbryan" />
+
+  <!-- Basic Obstacle Avoidance Controller -->
+  <node pkg="aslam_project" type="randomMotionController" name="randomMotionController" />
+  
+  <!-- Joint Controller - Hold arms and legs still, maintain neck position -->
+  <node pkg="aslam_project" type="jointCmdPub" name="jointCmdPub" />
+  
+  <!-- imFilter - Create Gaussian-filtered versions of images -->
+  <node pkg="aslam_project" type="imFilter" name="imFilter" />
+  
+  <!-- Image Saver Node -->
+  <node pkg="image_view" type="image_saver" name="image_saver" >
+  <param name="image" value="/multisense_sl/left/image_raw" />
+  <param name="_filename_format" value="/home/colin/Documents/PhotoDump/left%04d.%s" />
+  </node>
+  
+  <node pkg="image_view" type="image_saver" name="left_image_saver" >
+    <remap from="image" to="/multisense_sl/left/image_raw"/>
+    <!--param name="save_all_image" value="false" -->
+	<param name="filename_format" value="/home/colin/Documents/PhotoDump/left%04d.%s"/>
+  </node>
+
+</launch>

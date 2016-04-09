@@ -1,0 +1,98 @@
+<html><head>
+<link rel="stylesheet" type="text/css" href="http://jsxgraph.uni-bayreuth.de/distrib/jsxgraph.css" />
+<link rel="stylesheet" type="text/css" href="http://imagine.enpc.fr/~moulonp/style.css" /><script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.93/jsxgraphcore.js"></script>
+<title>SequentialReconstructionEngine SFM report.</title>
+</head>
+<h1>SequentialSfMReconstructionEngine</h1>
+<hr>Dataset info:Views count: 22<br><h1>Essential Matrix.</h1>
+
+-------------------------------<br>-- Robust Essential matrix: <0,1> images: /home/colin/Documents/FilteredPhotoDump/Img0004.jpg,/home/colin/Documents/FilteredPhotoDump/Img34.jpg<br>-- Threshold: 1<br>-- Resection status: OK<br>-- Nb points used for robust Essential matrix estimation: 559<br>-- Nb points validated by robust estimation: 430<br>-- % points validated: 0.769231<br>-------------------------------<br><h2>Residual of the robust estimation (Initial triangulation). Thresholded at: 1</h2>
+<h2>Histogram of residuals</h2>
+
+<div id="InitialPairTriangulationKeptInfo" class="jxgbox" style="width:600px; height:300px;"></div>
+<script type="text/javascript">
+var board = JXG.JSXGraph.initBoard('InitialPairTriangulationKeptInfo', {boundingbox: [-10, 10, 10, -10], axis:true,showCopyright:false});
+board.suspendUpdate();
+var data0= [0.00000,0.10305,0.20610,0.30914,0.41219,0.51524,0.61829,0.72133,0.82438,0.92743,];
+var data1= [1459.00000,179.00000,45.00000,27.00000,4.00000,2.00000,2.00000,0.00000,0.00000,1.00000,];
+board.createElement('chart', [ data0,data1], {chartStyle:'line,point',labels:[ data0,data1]});
+var p2 = board.create('point',[1.00000,0.00000], {fixed:true});
+var p3 = board.create('point',[1.00000,1459.00000], {fixed:true});
+var li = board.create('line',[p2,p3], {strokeColor:'00ff00',strokeWidth:2});
+board.unsuspendUpdate();
+board.setBoundingBox([-0.18548,1750.80000,1.11291,-291.80000]);
+</script>
+<hr><h1>Resection of Image index: <3> image: /home/colin/Documents/FilteredPhotoDump/Img36.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <3> image: /home/colin/Documents/FilteredPhotoDump/Img36.jpg<br>-- Threshold: 0.427848<br>-- Resection status: OK<br>-- Nb points used for Resection: 396<br>-- Nb points validated by robust estimation: 387<br>-- % points validated: 0.977273<br>-------------------------------<br><h1>Resection of Image index: <2> image: /home/colin/Documents/FilteredPhotoDump/Img35.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <2> image: /home/colin/Documents/FilteredPhotoDump/Img35.jpg<br>-- Threshold: 0.401288<br>-- Resection status: OK<br>-- Nb points used for Resection: 460<br>-- Nb points validated by robust estimation: 448<br>-- % points validated: 0.973913<br>-------------------------------<br><h1>Resection of Image index: <5> image: /home/colin/Documents/FilteredPhotoDump/Img38.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <5> image: /home/colin/Documents/FilteredPhotoDump/Img38.jpg<br>-- Threshold: 0.47536<br>-- Resection status: OK<br>-- Nb points used for Resection: 460<br>-- Nb points validated by robust estimation: 442<br>-- % points validated: 0.96087<br>-------------------------------<br><h1>Resection of Image index: <4> image: /home/colin/Documents/FilteredPhotoDump/Img37.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <4> image: /home/colin/Documents/FilteredPhotoDump/Img37.jpg<br>-- Threshold: 0.388467<br>-- Resection status: OK<br>-- Nb points used for Resection: 506<br>-- Nb points validated by robust estimation: 482<br>-- % points validated: 0.952569<br>-------------------------------<br><h1>Resection of Image index: <6> image: /home/colin/Documents/FilteredPhotoDump/Img39.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <6> image: /home/colin/Documents/FilteredPhotoDump/Img39.jpg<br>-- Threshold: 0.452912<br>-- Resection status: OK<br>-- Nb points used for Resection: 502<br>-- Nb points validated by robust estimation: 477<br>-- % points validated: 0.950199<br>-------------------------------<br><h1>Resection of Image index: <7> image: /home/colin/Documents/FilteredPhotoDump/Img40.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <7> image: /home/colin/Documents/FilteredPhotoDump/Img40.jpg<br>-- Threshold: 0.533055<br>-- Resection status: OK<br>-- Nb points used for Resection: 502<br>-- Nb points validated by robust estimation: 488<br>-- % points validated: 0.972112<br>-------------------------------<br><h1>Resection of Image index: <9> image: /home/colin/Documents/FilteredPhotoDump/Img42.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <9> image: /home/colin/Documents/FilteredPhotoDump/Img42.jpg<br>-- Threshold: 0.566311<br>-- Resection status: OK<br>-- Nb points used for Resection: 503<br>-- Nb points validated by robust estimation: 484<br>-- % points validated: 0.962227<br>-------------------------------<br><h1>Resection of Image index: <12> image: /home/colin/Documents/FilteredPhotoDump/Img45.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <12> image: /home/colin/Documents/FilteredPhotoDump/Img45.jpg<br>-- Threshold: 0.584273<br>-- Resection status: OK<br>-- Nb points used for Resection: 505<br>-- Nb points validated by robust estimation: 481<br>-- % points validated: 0.952475<br>-------------------------------<br><h1>Resection of Image index: <11> image: /home/colin/Documents/FilteredPhotoDump/Img44.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <11> image: /home/colin/Documents/FilteredPhotoDump/Img44.jpg<br>-- Threshold: 0.540785<br>-- Resection status: OK<br>-- Nb points used for Resection: 538<br>-- Nb points validated by robust estimation: 512<br>-- % points validated: 0.951673<br>-------------------------------<br><h1>Resection of Image index: <10> image: /home/colin/Documents/FilteredPhotoDump/Img43.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <10> image: /home/colin/Documents/FilteredPhotoDump/Img43.jpg<br>-- Threshold: 0.624694<br>-- Resection status: OK<br>-- Nb points used for Resection: 542<br>-- Nb points validated by robust estimation: 523<br>-- % points validated: 0.964945<br>-------------------------------<br><h1>Resection of Image index: <13> image: /home/colin/Documents/FilteredPhotoDump/Img46.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <13> image: /home/colin/Documents/FilteredPhotoDump/Img46.jpg<br>-- Threshold: 0.655292<br>-- Resection status: OK<br>-- Nb points used for Resection: 542<br>-- Nb points validated by robust estimation: 521<br>-- % points validated: 0.961255<br>-------------------------------<br><h1>Resection of Image index: <14> image: /home/colin/Documents/FilteredPhotoDump/Img47.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <14> image: /home/colin/Documents/FilteredPhotoDump/Img47.jpg<br>-- Threshold: 0.600412<br>-- Resection status: OK<br>-- Nb points used for Resection: 538<br>-- Nb points validated by robust estimation: 509<br>-- % points validated: 0.946097<br>-------------------------------<br><h1>Resection of Image index: <15> image: /home/colin/Documents/FilteredPhotoDump/Img48.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <15> image: /home/colin/Documents/FilteredPhotoDump/Img48.jpg<br>-- Threshold: 0.597334<br>-- Resection status: OK<br>-- Nb points used for Resection: 532<br>-- Nb points validated by robust estimation: 501<br>-- % points validated: 0.941729<br>-------------------------------<br><h1>Resection of Image index: <8> image: /home/colin/Documents/FilteredPhotoDump/Img41.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <8> image: /home/colin/Documents/FilteredPhotoDump/Img41.jpg<br>-- Threshold: 0.528878<br>-- Resection status: OK<br>-- Nb points used for Resection: 539<br>-- Nb points validated by robust estimation: 512<br>-- % points validated: 0.949907<br>-------------------------------<br><h1>Resection of Image index: <17> image: /home/colin/Documents/FilteredPhotoDump/Img50.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <17> image: /home/colin/Documents/FilteredPhotoDump/Img50.jpg<br>-- Threshold: 0.624398<br>-- Resection status: OK<br>-- Nb points used for Resection: 539<br>-- Nb points validated by robust estimation: 509<br>-- % points validated: 0.944341<br>-------------------------------<br><h1>Resection of Image index: <16> image: /home/colin/Documents/FilteredPhotoDump/Img49.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <16> image: /home/colin/Documents/FilteredPhotoDump/Img49.jpg<br>-- Threshold: 0.664842<br>-- Resection status: OK<br>-- Nb points used for Resection: 567<br>-- Nb points validated by robust estimation: 541<br>-- % points validated: 0.954145<br>-------------------------------<br><h1>Resection of Image index: <21> image: /home/colin/Documents/FilteredPhotoDump/Img54.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <21> image: /home/colin/Documents/FilteredPhotoDump/Img54.jpg<br>-- Threshold: 0.810978<br>-- Resection status: OK<br>-- Nb points used for Resection: 551<br>-- Nb points validated by robust estimation: 533<br>-- % points validated: 0.967332<br>-------------------------------<br><h1>Resection of Image index: <20> image: /home/colin/Documents/FilteredPhotoDump/Img53.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <20> image: /home/colin/Documents/FilteredPhotoDump/Img53.jpg<br>-- Threshold: 0.769797<br>-- Resection status: OK<br>-- Nb points used for Resection: 616<br>-- Nb points validated by robust estimation: 597<br>-- % points validated: 0.969156<br>-------------------------------<br><h1>Resection of Image index: <18> image: /home/colin/Documents/FilteredPhotoDump/Img51.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <18> image: /home/colin/Documents/FilteredPhotoDump/Img51.jpg<br>-- Threshold: 0.707018<br>-- Resection status: OK<br>-- Nb points used for Resection: 644<br>-- Nb points validated by robust estimation: 621<br>-- % points validated: 0.964286<br>-------------------------------<br><h1>Resection of Image index: <19> image: /home/colin/Documents/FilteredPhotoDump/Img52.jpg<br> 
+</h1>
+
+-------------------------------<br>-- Robust Resection of camera index: <19> image: /home/colin/Documents/FilteredPhotoDump/Img52.jpg<br>-- Threshold: 0.627181<br>-- Resection status: OK<br>-- Nb points used for Resection: 632<br>-- Nb points validated by robust estimation: 598<br>-- % points validated: 0.946203<br>-------------------------------<br><hr><h1>Structure from Motion process finished.</h1>
+-------------------------------<br>-- Structure from Motion (statistics):<br>-- #Camera calibrated: 22 from 22 input images.<br>-- #Tracks, #3D points: 845<br>-------------------------------<br><h2>Histogram of reprojection-residuals</h2>
+
+<div id="3DtoImageResiduals" class="jxgbox" style="width:600px; height:300px;"></div>
+<script type="text/javascript">
+var board = JXG.JSXGraph.initBoard('3DtoImageResiduals', {boundingbox: [-10, 10, 10, -10], axis:true,showCopyright:false});
+board.suspendUpdate();
+var data0= [0.00000,0.41100,0.82200,1.23300,1.64400,2.05500,2.46600,2.87700,3.28800,3.69900,];
+var data1= [28357.00000,316.00000,46.00000,9.00000,0.00000,2.00000,1.00000,0.00000,0.00000,0.00000,];
+board.createElement('chart', [ data0,data1], {chartStyle:'line,point',labels:[ data0,data1]});
+board.unsuspendUpdate();
+board.setBoundingBox([-0.73980,34028.40000,4.43880,-5671.40000]);
+</script>
+</html>

@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="gzname" default="gazebo"/>
-  <arg name="gzworld" default="$(find aslam_project)/worlds/myworld.world"/>
+  <arg name="gzworld" default="$(find aslam_project)/worlds/testworld.world"/>
   <arg name="hand_suffix" default=""/>
   <arg name="extra_gazebo_args" default="-q" />
   <arg name="model_args" default="" />
@@ -18,8 +18,7 @@
     <arg name="extra_gazebo_args" value="$(arg extra_gazebo_args)"/>
   </include>
 
-  <!-- to trigger synchronization delay, set
-       atlas_msgs::AtlasCommand::desired_controller_period_ms to non-zero -->
+  <!-- to trigger synchronization delay, set atlas_msgs::AtlasCommand::desired_controller_period_ms to non-zero -->
   <param name="/atlas/delay_window_size" type="double" value="5.0"/>
   <param name="/atlas/delay_max_per_window" type="double" value="0.25"/>
   <param name="/atlas/delay_max_per_step" type="double" value="0.025"/>
@@ -40,6 +39,30 @@
   <node pkg="aslam_project" type="init.sh" 
     args="" 
     name="init" output="screen">
+  </node>
+
+  <!-- Development aid - Convert quaternions in gazebo to roll, pitch, yaw for robot -->
+  <node pkg="aslam_project" type="quat2taitbryan" name="quat2taitbryan" />
+
+  <!-- Basic Obstacle Avoidance Controller -->
+  <node pkg="aslam_project" type="randomMotionController" name="randomMotionController" />
+  
+  <!-- Joint Controller - Hold arms and legs still, maintain neck position -->
+  <node pkg="aslam_project" type="jointCmdPub" name="jointCmdPub" />
+  
+  <!-- imFilter - Create Gaussian-filtered versions of images -->
+  <node pkg="aslam_project" type="imFilter" name="imFilter" />
+  
+  <!-- Image Saver Node -->
+  <node pkg="image_view" type="image_saver" name="image_saver" >
+  <param name="image" value="/multisense_sl/left/image_raw" />
+  <param name="_filename_format" value="/home/colin/Documents/PhotoDump/left%04d.%s" />
+  </node>
+  
+  <node pkg="image_view" type="image_saver" name="left_image_saver" >
+    <remap from="image" to="/multisense_sl/left/image_raw"/>
+    <!--param name="save_all_image" value="false" -->
+	<param name="filename_format" value="/home/colin/Documents/PhotoDump/left%04d.%s"/>
   </node>
 
 </launch>
