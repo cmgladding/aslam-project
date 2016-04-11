@@ -33,6 +33,9 @@ add_dependencies(randomMotionController ${catkin_EXPORTED_TARGETS})
 add_executable(openMVG_example src/openMVG_example.cpp)
 target_link_libraries(openMVG_example ${catkin_LIBRARIES} ${OPENMVG_LIBRARIES} ${OpenCV_LIBRARIES})
 
+add_executable(sfm_iterative src/sfm_iterative.cpp)
+target_link_libraries(sfm_iterative ${catkin_LIBRARIES} ${OPENMVG_LIBRARIES} ${OpenCV_LIBRARIES})
+
 add_executable(jointCmdPub src/jointCmdPub.cpp)
 target_link_libraries(jointCmdPub ${catkin_LIBRARIES})
 add_dependencies(jointCmdPub ${catkin_EXPORTED_TARGETS})

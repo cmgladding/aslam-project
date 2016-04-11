@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include "openMVG/sfm/sfm.hpp"
-//#include "openMVG/exif/exif_IO_EasyExif.hpp"
 #include "openMVG/image/image.hpp"
 #include "openMVG/stl/split.hpp"
 
@@ -13,12 +12,29 @@
 #include "openMVG/sfm/sfm.hpp"
 #include <ros/console.h>
 
+#include <cstdlib>
+
+
+#include "openMVG/system/timer.hpp"
+
+#include "third_party/cmdLine/cmdLine.h"
+#include "third_party/stlplus3/filesystemSimplified/file_system.hpp"
+
+#include <ros/ros.h>
+
+//#include <image_transport/image_transport.h>
+//#include <cv_bridge/cv_bridge.h>
+//#include <sensor_msgs/image_encodings.h>
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include <sstream>
+
+using namespace openMVG;
 using namespace std;
 using namespace openMVG::sfm;
 using namespace openMVG::features;
 using namespace openMVG::image;
 using namespace openMVG::cameras;
-//using namespace openMVG::exif;
 using namespace openMVG::matching_image_collection;
 using namespace stlplus;
 
@@ -62,8 +78,7 @@ vector<string> file_list;
     string imnm = stlplus::create_filespec(_directory, which);
     _fnames.push_back(imnm);
   }
-  //_matches_full = string(_directory + "/matches.putative.txt");
-  //_matches_filtered = string(_directory + "/matches.f.txt");
+  
   _matches_full = stlplus::create_filespec(_directory, "matches.putative.txt");
   _matches_filtered = stlplus::create_filespec(_directory, "matches.f.txt");
 }
@@ -93,37 +108,6 @@ shared_ptr<IntrinsicBase> intrinsic (NULL);
     return;
     }
     
-  //Exif data extraction not required (not compatible with ROS image outputs anyway)
-/*
-  //Pointer must be of type Exif_IO
-  unique_ptr<Exif_IO_EasyExif> exifReader(new Exif_IO_EasyExif());
-  //ROS_ERROR("exifReader created");
-  //std::unique_ptr<Exif_IO> exifReader(new Exif_IO_EasyExif());
-  if (!exifReader->open(which)){
-    //ROS_ERROR("exifReader Failed");
-    return;
-    }
-
-
-  image_focal = static_cast<double>(exifReader->getFocal());
-  width = static_cast<double>(exifReader->getWidth());
-  height = static_cast<double>(exifReader->getHeight());
-  
-  ppx = width / 2.0; //image center point
-  ppy = height / 2.0; //image center point
-    
-  if (image_focal == 0)
-    return;
-
-  const double ccdw = 5.75; // Cheap Samsung S890
-  //const double ccdw = 4.62;// Also Cheap Canon SX410-IS
-  //const double ccdw = 7.39; // Nicer Canon G9
-  //const double ccdw = 35.9; // Very Nice Sony DSLR/A850
-  focal = std::max (width, height) * image_focal / ccdw;
-
-  printf("Image %s: %f x %f, Focal Length (mm) %f, Focal Length (pixels) %f\n", which.c_str(), width, height, image_focal,focal);
-  */
-
   //Known values for multisim_sl from DRCsim .ini files
   focal = 476.7030836014194; //focal length in pixels 
   width = 800.0; //sensor width in pixels
@@ -158,7 +142,6 @@ unique_ptr<AKAZE_Image_describer> image_describer(new AKAZE_Image_describer(para
     if (!stlplus::file_exists(sFeat)) {
       Image<unsigned char> imageGray;
       printf("Creating %s\n", sFeat.c_str());
-      ROS_ERROR("String passed to ReadImage = %s",view->s_Img_path.c_str());
       ReadImage(view->s_Img_path.c_str(), &imageGray);
       unique_ptr<Regions> regions;
       image_describer->Describe(imageGray, regions);
@@ -185,23 +168,7 @@ vector<pair<size_t, size_t> > vec_imagesSize;
 
   unique_ptr<Matcher_Regions_AllInMemory> collectionMatcher;
   collectionMatcher.reset(new Matcher_Regions_AllInMemory(fDistRatio, openMVG::ANN_L2));
-
-/*
-//Sample code section updated to conform to latest library updates
-//https://github.com/openMVG/openMVG/commit/6029189456152aa5dd4de0a822da5d2c06835a36
-
-//no function loadData under collectionmatcher
-  if (collectionMatcher->loadData(_regionsType, vec_fileNames, _directory)) {
-    openMVG::Pair_Set pairs;
-    pairs = openMVG::exhaustivePairs(_sfm_data.GetViews().size());
-//no function Match under collectionmatcher
-    collectionMatcher->Match(vec_fileNames, pairs, map_PutativesMatches);
-    ofstream file(_matches_full);
-    if (file.is_open())
-      PairedIndMatchToStream(map_PutativesMatches, file);
-    file.close();
-  }*/
-  
+ 
     openMVG::Pair_Set pairs;
     shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>(); //added
   if (!regions_provider->load(_sfm_data, _directory, _regionsType)){ //added
@@ -228,21 +195,11 @@ vector<pair<size_t, size_t> > vec_imagesSize;
 
   openMVG::PairWiseMatches map_GeometricMatches;
 
-//no function collectionGeomFilter
-  //ImageCollectionGeometricFilter collectionGeomFilter(feats_provider.get());
+
 std::unique_ptr<ImageCollectionGeometricFilter> filter_ptr(new ImageCollectionGeometricFilter(&_sfm_data, regions_provider));
 
   const double maxResidualError = 1.0; // dflt 1.0; // Lower is stricter
 
-//no member method "Filter" after library changes
-//https://github.com/openMVG/openMVG/commit/fa8ab91c04dd0828ce60e9b7e74069f5cc54d4d6
-/*
-  collectionGeomFilter.Filter(
-            GeometricFilter_FMatrix_AC(maxResidualError),
-            map_PutativesMatches,
-            map_GeometricMatches,
-            vec_imagesSize);
-*/
 filter_ptr->Robust_model_estimation(GeometricFilter_FMatrix_AC(maxResidualError), map_PutativesMatches); //added
 map_GeometricMatches = filter_ptr->Get_geometric_matches(); //added
 
@@ -305,17 +262,47 @@ int LoadImageListing(ImageList* iml, const char* imagedir) {
 return 0;
 }
 
+void sfmCB(const sensor_msgs::ImageConstPtr& msg)
+{
 
+  //Add thread protection here?
+
+  string filepath;
+  filepath = "/home/colin/Documents/FilteredPhotoDump/"; //directory to check for images
+  
+  //check if this should be in the initial pair - if so, set initialPairString
+  
+  /*move these functions into callback
+  LoadImageListing(&iml, argv[1]);
+    setDirectory
+    loadAllImages
+  iml.generateFeatures();
+  iml.computeMatches();
+  iml.sequentialReconstruct();
+  */
+
+  //End thread protection here?
+}
+
+ImageList iml; //create GLOBAL imagelist structure to store data
 int main(int argc, char* argv[])
 {
-ImageList iml;
 
-  if (argc != 2) {
-    printf("supply a target directory\n");
-    return 0;
-  }
+  //ImageList iml; //imagelist moved to global scope so callbacks can access member methods
+
+/*move these functions into callback
   LoadImageListing(&iml, argv[1]);
   iml.generateFeatures();
   iml.computeMatches();
   iml.sequentialReconstruct();
+  */
+  
+  ros::init(argc, argv, "sfm_iterative");
+  
+  ros::NodeHandle n;
+  
+  ros::Subscriber sfm_sub = n.subscribe("/multisense_sl/left/image_raw", 1000, sfmCB);
+
+  ros::spin();
+
 }

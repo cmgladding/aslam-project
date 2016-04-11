@@ -42,7 +42,9 @@
   </node>
 
   <!-- Development aid - Convert quaternions in gazebo to roll, pitch, yaw for robot -->
+<!-- Angle not needed right now
   <node pkg="aslam_project" type="quat2taitbryan" name="quat2taitbryan" />
+-->
 
   <!-- Basic Obstacle Avoidance Controller -->
   <node pkg="aslam_project" type="randomMotionController" name="randomMotionController" />
@@ -53,7 +55,11 @@
   <!-- imFilter - Create Gaussian-filtered versions of images -->
   <node pkg="aslam_project" type="imFilter" name="imFilter" />
   
+  <!-- sfm_iterative - Perform reconstruction with every image received -->
+  <node pkg="aslam_project" type="sfm_iterative" name="sfm_iterative" />
+  
   <!-- Image Saver Node -->
+<!-- Image saver node not needed - imFilter outputs filtered images to file
   <node pkg="image_view" type="image_saver" name="image_saver" >
   <param name="image" value="/multisense_sl/left/image_raw" />
   <param name="_filename_format" value="/home/colin/Documents/PhotoDump/left%04d.%s" />
@@ -61,8 +67,9 @@
   
   <node pkg="image_view" type="image_saver" name="left_image_saver" >
     <remap from="image" to="/multisense_sl/left/image_raw"/>
-    <!--param name="save_all_image" value="false" -->
+    <param name="save_all_image" value="true" />
 	<param name="filename_format" value="/home/colin/Documents/PhotoDump/left%04d.%s"/>
   </node>
+-->
 
 </launch>

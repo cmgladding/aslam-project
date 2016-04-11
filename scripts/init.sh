@@ -2,9 +2,10 @@
 #
 # Workaround script to initialize environmental variable and atlas mode, allowing non-dynamic walking.
 #
-#echo "Setting multisense_sl frames per second"
-#echo
-rostopic pub --once /multisense_sl/set_fps std_msgs/Float64 '{data: 10}'
+echo "Setting multisense_sl frames per second (minimum 1.0 fps)"
+echo
+#rostopic pub --once /multisense_sl/set_fps std_msgs/Float64 '{data: 1.0}'
+rostopic pub --latch /multisense_sl/set_fps std_msgs/Float64 '{data: 1.0}'
 echo
 sleep 10    #timer to ensure gazebo has finished launching
 echo "Publishing /atlas/mode to pid_stand"

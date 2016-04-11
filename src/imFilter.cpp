@@ -41,8 +41,29 @@ void filterCB(const sensor_msgs::ImageConstPtr& msg)
         GaussianBlur( cv_ptr->image, dst, Size( i, i ), 0, 0 );
         }
   
+  string filepath;
+  if (IMG_COUNT < 10){
+    filepath = "/home/colin/Documents/FilteredPhotoDump/Img0000";
+    }
+  else if (IMG_COUNT < 100){
+    filepath = "/home/colin/Documents/FilteredPhotoDump/Img000";
+    }
+  else if (IMG_COUNT < 1000){
+    filepath = "/home/colin/Documents/FilteredPhotoDump/Img00";
+    }
+  else if (IMG_COUNT < 10000){
+    filepath = "/home/colin/Documents/FilteredPhotoDump/Img0";
+    }
+  else if (IMG_COUNT < 100000){
+    filepath = "/home/colin/Documents/FilteredPhotoDump/Img";
+    }
+  else if (IMG_COUNT >= 100000){
+    ROS_ERROR("Error: Image count too high!");
+    return;
+    }
+  
   //io - save jpg to file
-  convert << "/home/colin/Documents/FilteredPhotoDump/Img" << IMG_COUNT << ".jpg";
+  convert << filepath << IMG_COUNT << ".jpg";
   imwrite( convert.str(), dst);
   
   IMG_COUNT++;
