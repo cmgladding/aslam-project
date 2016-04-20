@@ -138,14 +138,14 @@ int main(int argc, char **argv)
     if (proximity < prox_min){
         prox_min = proximity;
     } //if
-    ROS_ERROR_THROTTLE(5,"x = %f",x);
-    ROS_ERROR_THROTTLE(5,"y = %f",y);
+    //ROS_ERROR_THROTTLE(5,"x = %f",x);
+    //ROS_ERROR_THROTTLE(5,"y = %f",y);
     //ROS_ERROR("Proximity = %f",proximity);
     if (prox_min < 2.0){
 
         cmd.angular.z = -1/pow(prox_min,2); //begin turn if object is near
-        ROS_ERROR_THROTTLE(1,"Proximity triggered, cmd = %f",cmd.angular.z);
-        ROS_ERROR_THROTTLE(1,"cmd den = %f",pow(prox_min,10));
+        //ROS_ERROR_THROTTLE(1,"Proximity triggered, cmd = %f",cmd.angular.z);
+        //ROS_ERROR_THROTTLE(1,"cmd den = %f",pow(prox_min,10));
         break;
     } //if
     else {
@@ -154,10 +154,17 @@ int main(int argc, char **argv)
   } //for loop
 
   //FOR TROUBLESHOOTING - constant values of
-  cmd.linear.x = 0.05;
-  cmd.linear.y = -0.25;
+  //cmd.linear.x = 0.01;
+  //cmd.linear.y = -0.25;
+  //cmd.linear.z = 0.0;
+  //cmd.angular.z = 0.025;
+  
+  cmd.linear.x = 0.0;
+  cmd.linear.y = 0.0;
   cmd.linear.z = 0.0;
-  cmd.angular.z = pi*0.025;
+  cmd.angular.x = 0.0;
+  cmd.angular.y = 0.0;
+  cmd.angular.z = 0.0;
 
   pub_cmd.publish(cmd);
 

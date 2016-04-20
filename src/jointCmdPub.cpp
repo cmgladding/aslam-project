@@ -33,10 +33,11 @@ void SetJointStates(const sensor_msgs::JointState::ConstPtr &_js)
     // for testing round trip time
     jointcommands.header.stamp = _js->header.stamp;
 
-    // assign zero joint angle targets for all except neck joint
+    // assign sinusoidal joint angle targets
     for (unsigned int i = 0; i < jointcommands.name.size(); i++)
-      jointcommands.position[i] = 0.0;
-    
+      jointcommands.position[i] =
+        0.0;
+        
     jointcommands.position[24] = 3.14159265359;
 
     pub_joint_commands_.publish(jointcommands);
@@ -45,8 +46,7 @@ void SetJointStates(const sensor_msgs::JointState::ConstPtr &_js)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "pub_joint_command_test");
-
+  ros::init(argc, argv, "jointCmdPub");
 
   ros::NodeHandle* rosnode = new ros::NodeHandle();
 
@@ -91,7 +91,6 @@ int main(int argc, char** argv)
   jointcommands.name.push_back("atlas::r_arm_mwx");
 
   unsigned int n = jointcommands.name.size();
-
   jointcommands.position.resize(n);
   jointcommands.velocity.resize(n);
   jointcommands.effort.resize(n);
@@ -133,7 +132,6 @@ int main(int argc, char** argv)
     ros::SubscribeOptions::create<sensor_msgs::JointState>(
     "/atlas/joint_states", 1, SetJointStates,
     ros::VoidPtr(), rosnode->getCallbackQueue());
-
 
   // Because TCP causes bursty communication with high jitter,
   // declare a preference on UDP connections for receiving

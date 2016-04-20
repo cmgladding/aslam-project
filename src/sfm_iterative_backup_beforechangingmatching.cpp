@@ -17,14 +17,6 @@
 
 #include "openMVG/image/image.hpp"
 #include "openMVG/stl/split.hpp"
-#include "openMVG/sfm/sfm_data.hpp"
-#include "openMVG/sfm/sfm_data_io.hpp"
-
-#include "openMVG/types.hpp"
-#include "openMVG/sfm/sfm_view.hpp"
-#include "openMVG/sfm/sfm_landmark.hpp"
-#include "openMVG/geometry/pose3.hpp"
-#include "openMVG/cameras/cameras.hpp"
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -151,41 +143,26 @@ int main(int argc, char** argv)
     
   ros::NodeHandle n;
   
-  bool initPairFlag = 0;
-  
-  //Moving initializations outside "while" loop
-  shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
-  shared_ptr<Features_Provider> feats_provider = std::make_shared<Features_Provider>();
-  shared_ptr<Matches_Provider> matches_provider = std::make_shared<Matches_Provider>();
-  AKAZEParams params(AKAZEConfig(), AKAZE_MSURF);
-  unique_ptr<AKAZE_Image_describer> image_describer(new AKAZE_Image_describer(params, true)); //false assumes features always upright
-  image_describer->Allocate(iml._regionsType);
-  float fDistRatio = 0.6f; // 0.8f dflt // Higher is stricter
-  std::unique_ptr<Matcher> collectionMatcher;
-  collectionMatcher.reset(new Cascade_Hashing_Matcher_Regions_AllInMemory(fDistRatio));
-  openMVG::PairWiseMatches map_GeometricMatches;
-  std::unique_ptr<ImageCollectionGeometricFilter> filter_ptr(new ImageCollectionGeometricFilter(&iml._sfm_data, regions_provider));
-  
-  //ofstream file_full(iml._matches_full, ofstream::app); //changed file object name to avoid conflict
-  //ofstream file_filtered(iml._matches_filtered, ofstream::app); //changed file object name to avoid conflict
-  
-  vector<string> file_list;
-  iml._sfm_data.s_root_path = iml._sMatchesDir;
-  
   //ros::Subscriber sfm_sub = n.subscribe("/multisense_sl/left/image_raw", 1000, sfmCB);
-  
-
 while (ros::ok())
   {
     while (ros::ok())
       {
-          
+  
+  //openMVG::system::Timer timer_fileList;
+  
+  vector<string> file_list;
+  iml._sfm_data.s_root_path = iml._sMatchesDir;
   file_list = stlplus::folder_files(iml._sMatchesDir);
 
   sort(file_list.begin(), file_list.end());
-    
+  
+  //std::cerr << std::endl << "File listing time: " << timer_fileList.elapsed() << std::endl;
+  
   ROS_INFO("File list updated, updating views for valid filenames...");
   
+  //openMVG::system::Timer timer_view;
+
   for (vector<string>::const_iterator it = file_list.begin(); it != file_list.end(); it++)  {
     string which = *it; //"which" is the name of the file, whatever.jpg
     string imnm = stlplus::create_filespec(iml._sMatchesDir, which); //"imnm" is the whole filepath including filename
@@ -250,14 +227,12 @@ while (ros::ok())
   
 // FOR NEW VIEWS, FIND FEATURES AND ADD TO SFM DATA - loadAllImages, loadImage from example code
 
-/*
   //Create image describer, generate _regionsType (similar to example code), assume stays the same
   AKAZEParams params(AKAZEConfig(), AKAZE_MSURF);
 
   unique_ptr<AKAZE_Image_describer> image_describer(new AKAZE_Image_describer(params, true)); //false assumes features always upright
   
   image_describer->Allocate(iml._regionsType);
-*/
   
   //Check every image and generate features if they don't exist yet (as in example code generateFeatures())
   image_describer->Set_configuration_preset(NORMAL_PRESET);
@@ -288,6 +263,8 @@ while (ros::ok())
 
   //ROS_INFO("Features found, finding contiguous pair matches...");
 
+  float fDistRatio = 0.6f; // 0.8f dflt // Higher is stricter
+  
   openMVG::system::Timer timer_matches;
 
   openMVG::matching::PairWiseMatches map_PutativesMatches;
@@ -297,14 +274,13 @@ while (ros::ok())
   //**************************
   //unique_ptr<Matcher_Regions_AllInMemory> collectionMatcher;
   //collectionMatcher.reset(new Matcher_Regions_AllInMemory(fDistRatio, openMVG::ANN_L2));
-/*
-  float fDistRatio = 0.6f; // 0.8f dflt // Higher is stricter
+  
   std::unique_ptr<Matcher> collectionMatcher;
   collectionMatcher.reset(new Cascade_Hashing_Matcher_Regions_AllInMemory(fDistRatio));
-*/
-  //****************************
+  
+  //****************************8
     openMVG::Pair_Set pairs;
-    //shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
+    shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
   if (!regions_provider->load(iml._sfm_data, iml._sMatchesDir, iml._regionsType)){
     ROS_ERROR("Regions provider load failed");
     //return;
@@ -312,55 +288,28 @@ while (ros::ok())
     }
     
     //no longer checking if data loads here
-    //pairs = contiguousWithOverlap(iml._sfm_data.GetViews().size(),1); //find matches with adjacent frames
-       
-    //static Pair_Set contiguousWithOverlap(const size_t N, const size_t overlapSize)
+    pairs = contiguousWithOverlap(iml._sfm_data.GetViews().size(),1); //find matches with adjacent frames
     
-    size_t N = iml._sfm_data.GetViews().size();
-    //cerr << "Current number of views = " << N << '\n';
-    
-    int overlapSize = 2;
-    if (initPairFlag)
-    overlapSize = 1;
-    //cerr << "Overlap = " << overlapSize << '\n';
-    if (N > overlapSize + 1){
-        for (size_t I = N - overlapSize - 1; I < N; ++I){
-        //cerr << "Currently on image I = " << I << '\n';
-            for(size_t J = I+1; J < N; ++J){
-            //cerr << "Making pair of I with J = " << J << '\n';
-                pairs.insert(std::make_pair(I,J));
-                }
-        }
-    }
-    else {
-        pairs = contiguousWithOverlap(N,overlapSize); //find matches with adjacent frames
-    }
-
     //cerr << "Pairs structure size = " << pairs.size() << '\n'; //print number of pairs to see how it grows over time
     
     collectionMatcher->Match(iml._sfm_data,regions_provider, pairs, map_PutativesMatches);
-    
-    //cerr << "Matching complete." << '\n';
 
-    ofstream file_full(iml._matches_full, ofstream::app); //changed file object name to avoid conflict
+    ofstream file_full(iml._matches_full); //changed file object name to avoid conflict
     if (file_full.is_open()){
       PairedIndMatchToStream(map_PutativesMatches, file_full);
       }
     file_full.close();
-    
-    //cerr << "Filestream complete." << '\n';
 
-/*
   openMVG::PairWiseMatches map_GeometricMatches;
-  std::unique_ptr<ImageCollectionGeometricFilter> filter_ptr(new ImageCollectionGeometricFilter(&iml._sfm_data, regions_provider));
-*/
+
+std::unique_ptr<ImageCollectionGeometricFilter> filter_ptr(new ImageCollectionGeometricFilter(&iml._sfm_data, regions_provider));
+
   const double maxResidualError = 1.0; // dflt 1.0; // Lower is stricter
 
-  filter_ptr->Robust_model_estimation(GeometricFilter_FMatrix_AC(maxResidualError), map_PutativesMatches);
+filter_ptr->Robust_model_estimation(GeometricFilter_FMatrix_AC(maxResidualError), map_PutativesMatches);
+map_GeometricMatches = filter_ptr->Get_geometric_matches();
 
-  map_GeometricMatches = filter_ptr->Get_geometric_matches();
-
-  ofstream file_filtered(iml._matches_filtered, ofstream::app); //changed file object name to avoid conflict
+  ofstream file_filtered(iml._matches_filtered); //changed file object name to avoid conflict
   if (file_filtered.is_open()){
     PairedIndMatchToStream(map_GeometricMatches, file_filtered);
     }
@@ -385,18 +334,17 @@ while (ros::ok())
     if(!stlplus::folder_create(iml._sOutDir)){
     ROS_ERROR("Output folder creation failed!");
     }    
-  }
+    }
 
   openMVG::system::Timer timer_reconstruction;
   SequentialSfMReconstructionEngine sfmEngine(
     iml._sfm_data,
     iml._sOutDir,
     stlplus::create_filespec(iml._sOutDir, "Reconstruction_Report.html"));
-  /*
+  
   // Load feature and match providers from data
   shared_ptr<Features_Provider> feats_provider = std::make_shared<Features_Provider>();
   shared_ptr<Matches_Provider> matches_provider = std::make_shared<Matches_Provider>();
-  */
 
   if (!feats_provider->load(iml._sfm_data, iml._sMatchesDir, iml._regionsType)){
     ROS_ERROR("Features provider load failed");
@@ -420,9 +368,8 @@ while (ros::ok())
   int i_User_camera_model = PINHOLE_CAMERA_RADIAL3; //Define camera model
   sfmEngine.SetUnknownCameraType(EINTRINSIC(i_User_camera_model));
 
-
   // Handle Initial pair parameter
-  if (!iml._initialPairString.first.empty() && !iml._initialPairString.second.empty() && initPairFlag == 0)
+  if (!iml._initialPairString.first.empty() && !iml._initialPairString.second.empty())
   {
     Pair initialPairIndex;
     
@@ -434,16 +381,17 @@ while (ros::ok())
       //return;
       break; //break out of current while loop
     }
-    //sfmEngine.setInitialPair(initialPairIndex);
-    initPairFlag = 1;
+    sfmEngine.setInitialPair(initialPairIndex);
   }
 
-
-  if (sfmEngine.Process())
-  {
-    
+sfmEngine.Process();
+  //if (sfmEngine.Process())
+  //{
+  
     ROS_INFO("Reconstruction successful, saving to file...");
     
+
+
     //std::cout << "...Generating SfM_Report.html" << std::endl;
     //Generate_SfM_Report(sfmEngine.Get_SfM_Data(), stlplus::create_filespec(iml._sOutDir, "SfMReconstruction_Report.html"));
       
@@ -462,54 +410,13 @@ while (ros::ok())
       openMVG::sfm::ESfM_Data(ALL));
       
     ROS_INFO("Point cloud saved to %s", stlplus::create_filespec(iml._sOutDir, "cloud_and_poses", ".ply").c_str());
+  //}
   
   std::cerr << std::endl << " Total Ac-Sfm took (s): " << timer_reconstruction.elapsed() << std::endl;
 ROS_INFO("Reconstruction saved to %s", stlplus::create_filespec(iml._sOutDir, "cloud_and_poses", ".ply").c_str());
-  } //if reconstruction is successful
-  
-
- 
-      //Landmarks& landmarks = sfmEngine.Get_SfM_Data().GetLandmarks();
-      const Landmarks landmarks = sfmEngine.Get_SfM_Data().GetLandmarks(); //typedef Hash_Map<IndexT, Landmark> Landmarks;
-      //Poses& poses = sfmEngine.Get_SfM_Data().GetPoses();
-      const Poses poses = sfmEngine.Get_SfM_Data().GetPoses(); //typedef Hash_Map<IndexT, geometry::Pose3> Poses;
-            
-//std::cerr << "Vector of landmarks stores " << int(sfmEngine.Get_SfM_Data().GetLandmarks().size()) << " 3D points.\n";
-//std::cerr << "Vector of poses stores " << int(sfmEngine.Get_SfM_Data().GetPoses().size()) << " 3D points.\n";
-      
-std:vector<Vec3> landmarkList;
-for (Landmarks::const_iterator iterLandmarks = landmarks.begin(); iterLandmarks != landmarks.end(); ++iterLandmarks)  {
-          //std::cerr << "Landmark found.";
-          const Vec3 X = iterLandmarks->second.X;
-          landmarkList.push_back (X);
-        }
-  
-    std::cerr << "Vector of landmarks stores " << int(landmarkList.size()) << " 3D points.\n";
-
-Vec3& poseVector;
-Mat3& rotVector;
-
-for (Poses::const_iterator iterPoses = poses.begin(); iterPoses != poses.end(); ++iterPoses)  {
-          //std::cerr << "Landmark found.";
-          //const Vec3 X = iterPoses->second.X;
-          //poseList.push_back (X);
-          
-          poseVector = iterPoses->second.center(); //typedef Eigen::Vector3d Vec3;
-          rotVector = iterPoses->second.rotation(); //typedef Eigen::Matrix<double, 3, 3> Mat3;
-        }
-  
-std::cerr << "Pose vector x y z = " << poseVector[0] << poseVector[1] << poseVector[2] << "\n";
-
-
-    //*******************************************************
-
-
-
-
-  //ros::spin();
   
   }//nested while loop
 }//second while loop (so we can use break statements without ending main()
-
+  //ros::spin();
 
 }

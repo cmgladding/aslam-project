@@ -30,6 +30,10 @@ add_executable(randomMotionController src/randomMotionController.cpp)
 target_link_libraries(randomMotionController ${catkin_LIBRARIES})
 add_dependencies(randomMotionController ${catkin_EXPORTED_TARGETS})
 
+add_executable(initController src/initController.cpp)
+target_link_libraries(initController ${catkin_LIBRARIES})
+add_dependencies(initController ${catkin_EXPORTED_TARGETS})
+
 add_executable(openMVG_example src/openMVG_example.cpp)
 target_link_libraries(openMVG_example ${catkin_LIBRARIES} ${OPENMVG_LIBRARIES} ${OpenCV_LIBRARIES})
 

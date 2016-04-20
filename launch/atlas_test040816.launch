@@ -1,16 +1,16 @@
 <launch>
 
   <arg name="gzname" default="gazebo"/>
-  <arg name="gzworld" default="$(find aslam_project)/worlds/myworld_test040816_grass.world"/>
+  <arg name="gzworld" default="$(find aslam_project)/worlds/brickbox_jerseybarriers.world"/>
   <arg name="hand_suffix" default=""/>
   <arg name="extra_gazebo_args" default="-q" />
   <arg name="model_args" default="" />
   <arg name="inertia_args" default="" /> <!-- _with_v1_inertia -->
-<!--
-  <param name="/atlas/time_to_unpin" type="double" value="1.0"/>
 
+  <param name="/atlas/time_to_unpin" type="double" value="5.0"/>
+<!--
   <param name="/atlas/startup_mode" type="string" value="bdi_stand"/>
-  -->
+-->
 
   <!-- start gazebo with the Atlas -->
   <include file="$(find drcsim_gazebo)/launch/atlas_no_controllers.launch">
@@ -42,13 +42,8 @@
     name="init" output="screen">
   </node>
 
-  <!-- Development aid - Convert quaternions in gazebo to roll, pitch, yaw for robot -->
-<!-- Angle not needed right now
-  <node pkg="aslam_project" type="quat2taitbryan" name="quat2taitbryan" />
--->
-
-  <!-- Basic Obstacle Avoidance Controller -->
-  <node pkg="aslam_project" type="randomMotionController" name="randomMotionController" />
+  <!-- Initialization Controller - Startup Motion Routine -->
+  <node pkg="aslam_project" type="initController" name="initController" />
   
   <!-- Joint Controller - Hold arms and legs still, maintain neck position -->
   <node pkg="aslam_project" type="jointCmdPub" name="jointCmdPub" />
@@ -57,7 +52,7 @@
   <node pkg="aslam_project" type="imFilter" name="imFilter" />
 
   <!-- sfm_iterative - Perform reconstruction with every image received -->
-  <node pkg="aslam_project" type="sfm_iterative" name="sfm_iterative" />
+  <node pkg="aslam_project" type="sfm_iterative" name="sfm_iterative"/>
 
   <!-- Image Saver Node -->
 <!-- Image saver node not needed - imFilter outputs filtered images to file
@@ -71,7 +66,16 @@
     <param name="save_all_image" value="true" />
 	<param name="filename_format" value="/home/colin/Documents/PhotoDump/left%04d.%s"/>
   </node>
+-->
 
+  <!-- Development aid - Convert quaternions in gazebo to roll, pitch, yaw for robot -->
+<!-- Angle not needed right now
+  <node pkg="aslam_project" type="quat2taitbryan" name="quat2taitbryan" />
+-->
+
+  <!-- Basic Obstacle Avoidance Controller -->
+  <!-- Testing open-loop routine for initialization
+  <node pkg="aslam_project" type="randomMotionController" name="randomMotionController" />
 -->
 
 </launch>
