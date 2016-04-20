@@ -28,7 +28,6 @@
 
 #include <ros/ros.h>
 #include <ros/console.h>
-#include <std_msgs/Float64.h>
 #include <utility> //std::pair
 #include <algorithm> //for vector search
 
@@ -145,15 +144,14 @@ int main(int argc, char** argv)
   
   //Define initial image pair filepaths
   iml._initialPairString.first = "Img00002.jpg"; 
-  iml._initialPairString.second = "Img00004.jpg"; 
+  iml._initialPairString.second = "Img00010.jpg"; 
   
   iml._matches_full = stlplus::create_filespec(iml._sMatchesDir, "matches.putative.txt");
   iml._matches_filtered = stlplus::create_filespec(iml._sMatchesDir, "matches.f.txt");
     
   ros::NodeHandle n;
   
-  bool initPairFlag = 0; //1 if we have an initial pair established success
-  int catchup_state = 0; //1 if we need to stop until caught up on photos  
+  bool initPairFlag = 0;
   
   //Moving initializations outside "while" loop
   shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
@@ -176,16 +174,6 @@ int main(int argc, char** argv)
   
   //ros::Subscriber sfm_sub = n.subscribe("/multisense_sl/left/image_raw", 1000, sfmCB);
   
-  //Catch-up flag publisher to control motion and frame processing
-  std_msgs::Float64 catchup_state_msg;
-  catchup_state_msg.data = 0.0;
-  std_msgs::Float64 init_state_msg;
-
-  ros::Publisher pub_catchup_state = n.advertise<std_msgs::Float64>("catchup_state", 1000);
-  
-  init_state_msg.data = initPairFlag;
-  ros::Publisher pub_init_state = n.advertise<std_msgs::Float64>("initialization_state", 1000);
-  pub_init_state.publish(init_state_msg);
 
 while (ros::ok())
   {
@@ -248,21 +236,11 @@ while (ros::ok())
   
   ROS_INFO("Loaded info for new view %s, skipping rest of files until next callback...",which.c_str());
   
-  //break; //only process one new view per loop
-  
-  if (catchup_state == 0 && initPairFlag == 1){ //publish state change if we were caught up and found a new frame, as long as recon exists
-  catchup_state = 1;
-  catchup_state_msg.data = catchup_state;
-  pub_catchup_state.publish(catchup_state_msg);
-  pub_init_state.publish(init_state_msg);
-  std::cerr << std::endl << "Catching up on image stream..." << std::endl;
-  }
+  break; //only process one new view per CB
   
     } //if file format is known to openMVG
   } //if filename is new
 } //for each file in the folder
-
-
 
   //std::cerr << std::endl << "View finding time: " << timer_view.elapsed() << std::endl;
 
@@ -297,15 +275,6 @@ while (ros::ok())
       image_describer->Describe(imageGray, regions);
       image_describer->Save(regions.get(), sFeat, sDesc);
       ROS_INFO("Features found for %s",view->s_Img_path.c_str());
-      
-  //if this is not last file in the list
-  if (catchup_state == 0 && initPairFlag == 1 && iterViews != --iml._sfm_data.views.end()){ //publish state change if we were caught up and found a new frame, as long as recon exists
-  catchup_state = 1;
-  catchup_state_msg.data = catchup_state;
-  pub_catchup_state.publish(catchup_state_msg);
-  pub_init_state.publish(init_state_msg);
-  std::cerr << std::endl << "Catching up on image stream..." << std::endl;
-  }
     }
     else {
       printf("Using existing features from %s\n", sFeat.c_str());
@@ -313,15 +282,6 @@ while (ros::ok())
   }
   
   std::cerr << std::endl << "Feature finding time: " << timer_feature.elapsed() << std::endl;
-  
-  //publish state change if we just caught up with image stream, as long as recon exists
-  if (catchup_state == 1 && initPairFlag == 1){ 
-  catchup_state = 0;
-  catchup_state_msg.data = catchup_state;
-  pub_catchup_state.publish(catchup_state_msg);
-  pub_init_state.publish(init_state_msg);
-  std::cerr << std::endl << "Caught up on photo stream." << std::endl;
-  }
 
 // GENERATE FEATURE MATCHES USING CONTIGUOUS PAIRS (as in example but using contiguous pairs)
 //https://github.com/openMVG/openMVG/blob/master/src/software/SfM/main_ComputeMatches.cpp
@@ -476,12 +436,9 @@ while (ros::ok())
     }
     //sfmEngine.setInitialPair(initialPairIndex);
     initPairFlag = 1;
-      
   }
 
-  init_state_msg.data = initPairFlag;
-  pub_init_state.publish(init_state_msg);
-  
+
   if (sfmEngine.Process())
   {
     

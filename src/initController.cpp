@@ -186,12 +186,16 @@ while (ros::ok())
   double elapsed = ros::Time::now().toSec() - begin.toSec();
   //ROS_ERROR("Time is...%f",elapsed);
 
-  if (elapsed < 15){
-  cmd.linear.y = -0.5;
-  //ROS_ERROR("Time < 10");
+  if (elapsed < 5){
+  cmd.linear.y = -0.001; //keep drcsim standing controller from starting
   }
   else if (elapsed < 60){
-  cmd.angular.z = 0.15;
+  cmd.linear.y = -0.15;
+  cmd.angular.z = 0.01;
+  //ROS_ERROR("Time < 10");
+  }
+  else if (elapsed < 65){
+  cmd.angular.z = 0.1;
   //ROS_ERROR("Time < 15");
   }
   else{

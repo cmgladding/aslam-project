@@ -26,7 +26,6 @@
 ros::Publisher pub_joint_commands_;
 osrf_msgs::JointCommands jointcommands;
 
-/*
 void SetJointStates(const sensor_msgs::JointState::ConstPtr &_js)
 {
   static ros::Time startTime = ros::Time::now();
@@ -34,16 +33,16 @@ void SetJointStates(const sensor_msgs::JointState::ConstPtr &_js)
     // for testing round trip time
     jointcommands.header.stamp = _js->header.stamp;
 
-    // assign zero joint angle targets for all except neck joint
+    // assign sinusoidal joint angle targets
     for (unsigned int i = 0; i < jointcommands.name.size(); i++)
-      jointcommands.position[i] = 0.0;
-    
+      jointcommands.position[i] =
+        0.0;
+        
     jointcommands.position[24] = 3.14159265359;
 
     pub_joint_commands_.publish(jointcommands);
   }
 }
-*/
 
 int main(int argc, char** argv)
 {
@@ -57,8 +56,9 @@ int main(int argc, char** argv)
   while (wait)
   {
     last_ros_time_ = ros::Time::now();
-    if (last_ros_time_.toSec() > 0)
+    if (last_ros_time_.toSec() > 0){
       wait = false;
+      }
   }
 
   // must match those inside AtlasPlugin
@@ -92,7 +92,6 @@ int main(int argc, char** argv)
   jointcommands.name.push_back("atlas::r_arm_mwx");
 
   unsigned int n = jointcommands.name.size();
-
   jointcommands.position.resize(n);
   jointcommands.velocity.resize(n);
   jointcommands.effort.resize(n);
@@ -102,8 +101,7 @@ int main(int argc, char** argv)
   jointcommands.kp_velocity.resize(n);
   jointcommands.i_effort_min.resize(n);
   jointcommands.i_effort_max.resize(n);
-  
-/*
+
   for (unsigned int i = 0; i < n; i++)
   {
     std::vector<std::string> pieces;
@@ -144,32 +142,15 @@ int main(int argc, char** argv)
   // we just prefer UDP.
   jointStatesSo.transport_hints = ros::TransportHints().unreliable();
 
-
   ros::Subscriber subJointStates = rosnode->subscribe(jointStatesSo);
   // ros::Subscriber subJointStates =
   //   rosnode->subscribe("/atlas/joint_states", 1000, SetJointStates);
-*/
+
   pub_joint_commands_ =
     rosnode->advertise<osrf_msgs::JointCommands>(
     "/atlas/joint_commands", 1, true);
 
-  //ros::Rate loop_rate(1);
-
-while (ros::ok()){
-
-    // assign zero joint angle targets for all except neck joint
-    for (unsigned int i = 0; i < jointcommands.name.size(); i++)
-      jointcommands.position[i] = 0.0;
-    
-    jointcommands.position[0] = -3.14159265359;
-
-    pub_joint_commands_.publish(jointcommands);
-    
-    //loop_rate.sleep();
-
-  //ros::spin();
-
-}
+  ros::spin();
 
   return 0;
 }
