@@ -9,13 +9,14 @@
 #include <std_msgs/Float64.h>
 #include <vector>
 
-/*
+
 class Pose{
 public:
 
   // 2D robot pose in the plane
     static double X;
     static double Y;
+    static double theta;
 
   Pose();
   ~Pose();
@@ -25,6 +26,7 @@ public:
   // Initialize pose values (in case we try to calculate before calling CB)
   double Pose::X = 0.0;
   double Pose::Y = 0.0;
+  double Pose::theta = 0.0;
 
 struct feature_point { // feature point detected by the system
   double x;
@@ -216,7 +218,7 @@ while (ros::ok())
   //ROS_ERROR("Time < 15");
   }
   */
-  else if (elapsed < 150){
+  else if (elapsed < 250){
   cmd.angular.z = -0.005;
   }
   else{

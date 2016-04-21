@@ -6,8 +6,10 @@ set(OpenMVG_DIR "/usr/local/openMVG_install/share/openMVG/cmake")
 FIND_PACKAGE(OpenMVG REQUIRED)
 
 ## Find catkin and any catkin packages
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs gazebo_msgs geometry_msgs sensor_msgs osrf_msgs image_view cv_bridge  pcl_ros)
 find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs gazebo_msgs geometry_msgs sensor_msgs osrf_msgs image_view cv_bridge)
 find_package(OpenCV REQUIRED)
+find_package(PCL 1.7.2 REQUIRED)
 
 ## Declare a catkin package
 catkin_package(
@@ -15,12 +17,16 @@ INCLUDE_DIRS include
 CATKIN_DEPENDS cv_bridge roscpp
 DEPENDS OpenMVG)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 #include_directories(include ${catkin_INCLUDE_DIRS} ${OPENMVG_INCLUDE_DIRS})
 include_directories(${catkin_INCLUDE_DIRS} ${OPENMVG_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 link_directories(${catkin_LIBRARY_DIRS} ${OPENMVG_LIBRARY_DIRS})
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 add_executable(quat2taitbryan src/quat2taitbryan.cpp)
 target_link_libraries(quat2taitbryan ${catkin_LIBRARIES})
@@ -30,9 +36,13 @@ add_executable(randomMotionController src/randomMotionController.cpp)
 target_link_libraries(randomMotionController ${catkin_LIBRARIES})
 add_dependencies(randomMotionController ${catkin_EXPORTED_TARGETS})
 
-add_executable(initController src/initController.cpp)
-target_link_libraries(initController ${catkin_LIBRARIES})
-add_dependencies(initController ${catkin_EXPORTED_TARGETS})
+#add_executable(initController src/initController.cpp)
+#target_link_libraries(initController ${catkin_LIBRARIES})
+#add_dependencies(initController ${catkin_EXPORTED_TARGETS})
+
+add_executable(controller_DR src/controller_DR.cpp)
+target_link_libraries(controller_DR ${catkin_LIBRARIES})
+add_dependencies(controller_DR ${catkin_EXPORTED_TARGETS})
 
 add_executable(openMVG_example src/openMVG_example.cpp)
 target_link_libraries(openMVG_example ${catkin_LIBRARIES} ${OPENMVG_LIBRARIES} ${OpenCV_LIBRARIES})
@@ -47,6 +57,10 @@ add_dependencies(jointCmdPub ${catkin_EXPORTED_TARGETS})
 add_executable(imFilter src/imFilter.cpp)
 target_link_libraries(imFilter ${catkin_LIBRARIES})
 add_dependencies(imFilter ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
+
+add_executable(rosprog src/rosprog.cpp)
+target_link_libraries(rosprog ${catkin_LIBRARIES} ${OPENMVG_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(rosprog ${catkin_EXPORTED_TARGETS} ${OPENMVG_LIBRARIES} ${PCL_LIBRARIES})
 
 ###Slightly modified from http://hackingonspace.blogspot.com/2015/09/the-basic-build.html
 #set(openMVG_DIR "${HOME}/catkin_ws/src/aslam_project/src/openMVG/cmake") 

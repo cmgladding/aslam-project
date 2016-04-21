@@ -8,9 +8,9 @@
   <arg name="inertia_args" default="" /> <!-- _with_v1_inertia -->
 
   <param name="/atlas/time_to_unpin" type="double" value="5.0"/>
-
+<!--
   <param name="/atlas/startup_mode" type="string" value="bdi_stand"/>
-
+-->
 
   <!-- start gazebo with the Atlas -->
   <include file="$(find drcsim_gazebo)/launch/atlas_no_controllers.launch">
@@ -42,8 +42,15 @@
     name="init" output="screen">
   </node>
 
-  <!-- Initialization Controller - Startup Motion Routine -->
+  <!-- Initialization Controller - Startup Motion Routine
   <node pkg="aslam_project" type="initController" name="initController" />
+   -->
+
+  <!-- Initialization Controller with Dead Reckoning Calculations -->
+  <node pkg="aslam_project" type="rosprog.cpp" name="rosprog.cpp" />
+
+  <!-- Initialization Controller with Dead Reckoning Calculations -->
+  <node pkg="aslam_project" type="controller_DR" name="controller_DR" />
   
   <!-- Joint Controller - Hold arms and legs still, maintain neck position -->
   <node pkg="aslam_project" type="jointCmdPub" name="jointCmdPub" />

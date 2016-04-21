@@ -216,7 +216,7 @@ while (ros::ok())
   //ROS_ERROR("Time < 15");
   }
   */
-  else if (elapsed < 150){
+  else if (elapsed < 250){
   cmd.angular.z = -0.005;
   }
   else{

@@ -12,7 +12,7 @@
 using namespace std;
 using namespace cv;
 
-int MAX_KERNEL_LENGTH = 5;
+int MAX_KERNEL_LENGTH = 3;
 int IMG_COUNT = 1;
 int CATCHUP_STATE = 0; //1 if we need to catch up on images (stop processing)
 int INIT_STATE = 0; //1 if initial pair has been processed
@@ -38,7 +38,7 @@ void filterCB(const sensor_msgs::ImageConstPtr& msg)
 double elapsed = ros::Time::now().toSec() - timer_start.toSec();
 
 //if (!INIT_STATE || (!CATCHUP_STATE && elapsed > 6.0)){ //once initialized, only process new images if we were recently caught up in processing them
-if (!CATCHUP_STATE && elapsed > 5.5){ //only process new images if we were recently caught up in processing them
+if (!CATCHUP_STATE && elapsed > 5.25){ //only process new images if we were recently caught up in processing them
 
   string filename;
   ostringstream convert;

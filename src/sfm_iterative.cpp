@@ -29,6 +29,8 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 #include <std_msgs/Float64.h>
+#include <geometry_msgs/Pose2D.h>
+#include <geometry_msgs/Quaternion.h>
 #include <utility> //std::pair
 #include <algorithm> //for vector search
 
@@ -144,7 +146,7 @@ int main(int argc, char** argv)
   iml._sOutDir = "/home/colin/Documents/SfM_PointCloudData"; //selected output directory for point cloud
   
   //Define initial image pair filepaths
-  iml._initialPairString.first = "Img00002.jpg"; 
+  iml._initialPairString.first = "Img00001.jpg"; 
   iml._initialPairString.second = "Img00010.jpg"; 
   
   iml._matches_full = stlplus::create_filespec(iml._sMatchesDir, "matches.putative.txt");
@@ -153,7 +155,9 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
   
   bool initPairFlag = 0; //1 if we have an initial pair established success
-  int catchup_state = 0; //1 if we need to stop until caught up on photos  
+  int catchup_state = 0; //1 if we need to stop until caught up on photos
+  int pose_count = 0; //running count of number of poses, to see when we create a new one
+  int new_pose = 0; //1 if we created a new pose
   
   //Moving initializations outside "while" loop
   shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
@@ -179,13 +183,22 @@ int main(int argc, char** argv)
   //Catch-up flag publisher to control motion and frame processing
   std_msgs::Float64 catchup_state_msg;
   catchup_state_msg.data = 0.0;
-  std_msgs::Float64 init_state_msg;
-
   ros::Publisher pub_catchup_state = n.advertise<std_msgs::Float64>("catchup_state", 1000);
   
+  //Publisher to declare whether initial reconstruction is complete
+  std_msgs::Float64 init_state_msg;
   init_state_msg.data = initPairFlag;
   ros::Publisher pub_init_state = n.advertise<std_msgs::Float64>("initialization_state", 1000);
   pub_init_state.publish(init_state_msg);
+  
+  //Publisher to declare whether initial reconstruction is complete
+  geometry_msgs::Quaternion pose_msg; //used as 2D pose with flag - abuse of message format
+  pose_msg.x = 0.0;
+  pose_msg.y = 0.0;
+  pose_msg.z = 0.0; //actually to be used as angle
+  pose_msg.w = 0.0; //actually to be used as new view flag
+  ros::Publisher pub_pose2D = n.advertise<geometry_msgs::Quaternion>("sfm_pose_update", 1000);
+  pub_pose2D.publish(pose_msg);
 
 while (ros::ok())
   {
@@ -516,6 +529,12 @@ ROS_INFO("Reconstruction saved to %s", stlplus::create_filespec(iml._sOutDir, "c
       const Landmarks landmarks = sfmEngine.Get_SfM_Data().GetLandmarks(); //typedef Hash_Map<IndexT, Landmark> Landmarks;
       //Poses& poses = sfmEngine.Get_SfM_Data().GetPoses();
       const Poses poses = sfmEngine.Get_SfM_Data().GetPoses(); //typedef Hash_Map<IndexT, geometry::Pose3> Poses;
+      
+      if (poses.size() > pose_count){
+          new_pose = 1;
+          }
+      
+      pose_count = poses.size();
             
 //std::cerr << "Vector of landmarks stores " << int(sfmEngine.Get_SfM_Data().GetLandmarks().size()) << " 3D points.\n";
 //std::cerr << "Vector of poses stores " << int(sfmEngine.Get_SfM_Data().GetPoses().size()) << " 3D points.\n";
@@ -541,31 +560,59 @@ Vec3 yawPitchRoll; //derived from rotation matrix
 Vec3 yawPitchRollOut;
 
 for (Poses::const_iterator iterPoses = poses.begin(); iterPoses != poses.end(); ++iterPoses)  {
+//for (Poses::const_iterator iterPoses = --poses.end(); iterPoses != poses.end(); ++iterPoses)  {
           //std::cerr << "Landmark found.";
           //const Vec3 X = iterPoses->second.X;
           //poseList.push_back (X);
           
           poseVector = iterPoses->second.center(); //typedef Eigen::Vector3d Vec3;
-          rotVector = iterPoses->second.rotation(); //typedef Eigen::Matrix<double, 3, 3> Mat3;
+          //poseVector = iterPoses->second.translation(); //typedef Eigen::Vector3d Vec3;
+          //rotVector = iterPoses->second.rotation(); //typedef Eigen::Matrix<double, 3, 3> Mat3;
           
-          if (std::find(priorPoseList.begin(), priorPoseList.end(), poseVector) == priorPoseList.end()){ //if not in priorPoseList
+          //if (std::find(priorPoseList.begin(), priorPoseList.end(), poseVector) == priorPoseList.end()){ //if not in priorPoseList
           poseVectorOut = poseVector; //copy to output vector to save
-          priorPoseList.push_back (poseVector); //add to priorPoseList
-          }
+          //priorPoseList.push_back (poseVector); //add to priorPoseList
+          std::cerr << "Latest pose vector x y z = " << poseVector[0] << ", " << poseVector[1] << ", " <<  poseVector[2] << "\n";
+          //}
           
-          if (std::find(priorRotList.begin(), priorRotList.end(), rotVector) == priorRotList.end()){
-          priorRotList.push_back (rotVector);
-          yawPitchRoll = rotVector.eulerAngles(2,1,0);  //use Tait-Bryan angle convention zyx
-          yawPitchRollOut = yawPitchRoll;
-          }
+          //if (std::find(priorRotList.begin(), priorRotList.end(), rotVector) == priorRotList.end()){
+          //priorRotList.push_back (rotVector);
+          //yawPitchRoll = rotVector.eulerAngles(2,1,0);  //use Tait-Bryan angle convention zyx
+          //yawPitchRollOut = yawPitchRoll;
+          //std::cerr << "\nRotation mat vectors x = " << rotVector(0,0) << ", " <<  rotVector(0,1) << ", " <<  rotVector(0,2) << "\n";
+          //std::cerr << "Rotation mat vectors y = " << rotVector(1,0) << ", " <<  rotVector(1,1) << ", " <<  rotVector(1,2) << "\n";
+          //std::cerr << "Rotation mat vectors z = " << rotVector(2,0) << ", " <<  rotVector(2,1) << ", " <<  rotVector(2,2) << "\n\n";
+          //std::cerr << "Rotation vector yaw (z) pitch (y) roll (x) = " << yawPitchRollOut[0] << ", " <<  yawPitchRollOut[1] << ", " <<  yawPitchRollOut[2] << "\n";
+          //}
           
           //std::cerr << "Pose vector x y z = " << poseVector[0] << ", " << poseVector[1] << ", " <<  poseVector[2] << "\n";
           //std::cerr << "Rotation vector yaw (z) pitch (y) roll (x) = " << poseVector[0] << ", " <<  poseVector[1] << ", " <<  poseVector[2] << "\n";
         }
-  
-std::cerr << "Pose vector x y z = " << poseVectorOut[0] << ", " << poseVectorOut[1] << ", " << poseVectorOut[2] << "\n";
-std::cerr << "Rotation vector yaw (z) pitch (y) roll (x) = " << yawPitchRollOut[0] << ", " <<  yawPitchRollOut[1] << ", " <<  yawPitchRollOut[2] << "\n";
+        
+        for (Poses::const_iterator iterPoses = poses.begin(); iterPoses != poses.end(); ++iterPoses)  {
 
+          rotVector = iterPoses->second.rotation(); //typedef Eigen::Matrix<double, 3, 3> Mat3;
+          
+          yawPitchRoll = rotVector.eulerAngles(2,1,0);  //use Tait-Bryan angle convention zyx
+          yawPitchRollOut = yawPitchRoll;
+          /*
+          std::cerr << "\nRotation mat vectors x = " << rotVector(0,0) << ", " <<  rotVector(0,1) << ", " <<  rotVector(0,2) << "\n";
+          std::cerr << "Rotation mat vectors y = " << rotVector(1,0) << ", " <<  rotVector(1,1) << ", " <<  rotVector(1,2) << "\n";
+          std::cerr << "Rotation mat vectors z = " << rotVector(2,0) << ", " <<  rotVector(2,1) << ", " <<  rotVector(2,2) << "\n\n";
+          */
+          //std::cerr << "\nYaw? 0 = " << yawPitchRollOut[0] << "\n";
+          //std::cerr << "Pitch? 1 = " << yawPitchRollOut[1] << "\n";
+          //std::cerr << "Roll? 2 = " << yawPitchRollOut[2] << "\n";
+        }
+  
+//std::cerr << "Pose vector x y z = " << poseVectorOut[0] << ", " << poseVectorOut[1] << ", " << poseVectorOut[2] << "\n";
+//std::cerr << "Rotation vector yaw (z) pitch (y) roll (x) = " << yawPitchRollOut[0] << ", " <<  yawPitchRollOut[1] << ", " <<  yawPitchRollOut[2] << "\n";
+
+  pose_msg.x = poseVectorOut[0];
+  pose_msg.z = poseVectorOut[2];
+  pose_msg.y = yawPitchRollOut[1]; //actually angle
+  pose_msg.w = new_pose; //actually a flag for new pose
+  pub_pose2D.publish(pose_msg);
 
     //*******************************************************
 
