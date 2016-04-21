@@ -58,6 +58,10 @@ add_executable(imFilter src/imFilter.cpp)
 target_link_libraries(imFilter ${catkin_LIBRARIES})
 add_dependencies(imFilter ${catkin_EXPORTED_TARGETS} ${OpenCV_LIBRARIES})
 
+add_executable(waypoint_Controller src/waypoint_Controller.cpp)
+target_link_libraries(waypoint_Controller ${catkin_LIBRARIES})
+add_dependencies(waypoint_Controller ${catkin_EXPORTED_TARGETS})
+
 add_executable(rosprog src/rosprog.cpp)
 target_link_libraries(rosprog ${catkin_LIBRARIES} ${OPENMVG_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(rosprog ${catkin_EXPORTED_TARGETS} ${OPENMVG_LIBRARIES} ${PCL_LIBRARIES})
